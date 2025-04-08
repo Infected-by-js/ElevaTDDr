@@ -1,0 +1,28 @@
+@import "./fonts.css";
+@import "tailwindcss";
+
+@theme {
+  --default-font-family: RobotoMono, system-ui, sans-serif;
+  --font-sans: RobotoMono, system-ui, sans-serif;
+  --font-serif: RobotoMono, system-ui, sans-serif;
+  --font-mono: RobotoMono, system-ui, sans-serif;
+}
+
+::-webkit-scrollbar {
+  background: hsl(var(--pv-primary-100));
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--pv-primary-300));
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--pv-primary-400));
+}
+
+::-webkit-scrollbar-corner {
+  background: hsl(var(--pv-primary-100));
+}
