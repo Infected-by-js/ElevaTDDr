@@ -1,9 +1,10 @@
 {
-  "extends": ["@vue/tsconfig/tsconfig.dom.json"],
+  "extends": ["@tsconfig/node20/tsconfig.json", "@vue/tsconfig/tsconfig.dom.json"],
   "compilerOptions": {
     "baseUrl": "./src/",
     "jsx": "preserve",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "types": ["vite/client", "node"],
     "paths": {
       "@/*": ["*"]
     },

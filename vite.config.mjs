@@ -21,20 +21,20 @@ export default defineConfig({
     extensions: [".mjs", ".js", ".ts", ".vue"],
   },
 
-  test: {
-    environment: 'jsdom',
-    globals: true,
-    exclude: ['e2e/*', 'node_modules/**'],
-    root: __dirname,
-    environmentOptions: {
-      jsdom: {
-        url: 'http://localhost'
-      }
-    },
-    coverage: {
-      provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['node_modules/', 'src/assets/', '**/*.{test,spec}.{ts,tsx}'],
-    },
-  },
+  // test: {
+  //   environment: 'jsdom',
+  //   globals: true,
+  //   exclude: ['e2e/*', 'node_modules/**'],
+  //   root: __dirname,
+  //   environmentOptions: {
+  //     jsdom: {
+  //       url: 'http://localhost'
+  //     }
+  //   },
+  //   coverage: {
+  //     provider: 'v8',
+  //     reporter: ['text', 'json', 'html'],
+  //     exclude: ['node_modules/', 'src/assets/', '**/*.{test,spec}.{ts,tsx}'],
+  //   },
+  // },
 })
