@@ -1,4 +1,7 @@
-type ElevatorState = "IDLE" | "MOVING_UP" | "MOVING_DOWN" | "DOORS_OPENING" | "DOORS_CLOSING"
+import ElevatorEngine from "./ElevatorEngine"
+import ElevatorQueue from "./ElevatorQueue"
+
+import type {ElevatorDirection, ElevatorState} from "./types"
 
 export default class Elevator {
   static readonly IDLE: ElevatorState = "IDLE"
@@ -8,28 +11,46 @@ export default class Elevator {
   static readonly DOORS_CLOSING: ElevatorState = "DOORS_CLOSING"
 
   private _state: ElevatorState = Elevator.IDLE
-  private _currentFloor: number = 1
-  private _speed: number = 1
-  private _maxFloor: number = 4
-  private _queue: number[] = []
+  private _currentFloor: number
+  private _maxFloor: number
+  private _direction: ElevatorDirection = "UP"
+  private _sweepComplete: boolean = false
+  private _queueManager: ElevatorQueue
+  private engine: ElevatorEngine
+  private _speed: number
 
-  constructor({currentFloor = 1, speed = 1, maxFloor = 4}: {currentFloor?: number; speed?: number; maxFloor?: number} = {}) {
-    this._currentFloor = this.validateFloor(currentFloor, maxFloor)
+  constructor({
+    currentFloor = 1,
+    speed = 1,
+    maxFloor = 4,
+  }: {
+    currentFloor?: number
+    speed?: number
+    maxFloor?: number
+  } = {}) {
     this._speed = this.validateSpeed(speed)
     this._maxFloor = this.validateMaxFloor(maxFloor)
+    this._currentFloor = this.validateFloor(currentFloor, this._maxFloor)
+
+    this._queueManager = new ElevatorQueue()
+
+    this.engine = new ElevatorEngine({
+      speed: this._speed * 1000,
+      onTick: () => this._move(),
+    })
   }
 
-  validateFloor(floor: number, maxFloor: number) {
+  validateFloor(floor: number, maxFloor: number): number {
     if (floor < 1 || floor > maxFloor) throw new Error(`Invalid floor: ${floor}. Must be between 1 and ${maxFloor}`)
     return floor
   }
 
-  validateSpeed(speed: number) {
+  validateSpeed(speed: number): number {
     if (speed <= 0) throw new Error(`Invalid speed: ${speed}. Must be greater than 0`)
     return speed
   }
 
-  validateMaxFloor(maxFloor: number) {
+  validateMaxFloor(maxFloor: number): number {
     if (maxFloor <= 1) throw new Error(`Invalid maxFloor: ${maxFloor}. Must be greater than 1`)
     return maxFloor
   }
@@ -51,27 +72,80 @@ export default class Elevator {
   }
 
   get queue(): number[] {
-    return structuredClone(this._queue)
+    return this._queueManager.floors
   }
 
-  call(floor: number) {
-    this._queue.push(floor)
+  get direction(): ElevatorDirection {
+    return this._direction
   }
 
-  selectFloor(floor: number) {
-    this._queue.push(floor)
+  call(floor: number, dir: ElevatorDirection): void {
+    try {
+      this.validateFloor(floor, this._maxFloor)
+      this._queueManager.add(floor, dir)
+      this.startIfIdle()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  move() {
-    if (!this._queue.length) return
-
-    const nextFloor = this._queue.shift()
-    if (!nextFloor) return
-
-    this._currentFloor = nextFloor
+  selectFloor(floor: number): void {
+    try {
+      this.validateFloor(floor, this._maxFloor)
+      const dir = floor > this._currentFloor ? "UP" : "DOWN"
+      this._queueManager.add(floor, dir)
+      this.startIfIdle()
+    } catch (error) {
+      console.error(error)
+    }
   }
 
-  stop() {
+  destroy(): void {
+    this.stop()
+    this.engine.destroy()
+  }
+
+  private startIfIdle(): void {
+    if (!this.engine.isRunning) this.engine.start()
+  }
+
+  private _move(): void {
+    if (this._queueManager.isEmpty) return
+
+    if (this._state === Elevator.IDLE) {
+      this._direction = this._queueManager.direction
+      this._sweepComplete = false
+    }
+
+    const nextFloor = this._queueManager.findNextFloor(this._currentFloor, this._direction, this._sweepComplete)
+
+    if (nextFloor !== null) {
+      if (nextFloor !== this._currentFloor) {
+        if (nextFloor > this._currentFloor) {
+          this._state = Elevator.MOVING_UP
+        } else if (nextFloor < this._currentFloor) {
+          this._state = Elevator.MOVING_DOWN
+        }
+
+        if (this._direction === "UP" && this._state === Elevator.MOVING_DOWN) {
+          this._sweepComplete = true
+        } else if (this._direction === "DOWN" && this._state === Elevator.MOVING_UP) {
+          this._sweepComplete = true
+        }
+
+        this._queueManager.remove(nextFloor)
+        this._currentFloor = nextFloor
+      }
+
+      if (this._sweepComplete) {
+        this._direction = this._direction === "UP" ? "DOWN" : "UP"
+        this._sweepComplete = false
+      }
+    }
+  }
+
+  private stop(): void {
+    this.engine.stop()
     this._state = Elevator.IDLE
   }
 }
