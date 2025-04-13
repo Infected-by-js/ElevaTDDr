@@ -83,6 +83,7 @@ export default class Elevator {
     try {
       this.validateFloor(floor, this._maxFloor)
       this._queueManager.add(floor, dir)
+      console.log(`Elevator.call(${floor}, ${dir}): Called elevator to floor ${floor} with direction ${dir}`);
       this.startIfIdle()
     } catch (error) {
       console.error(error)
@@ -94,6 +95,7 @@ export default class Elevator {
       this.validateFloor(floor, this._maxFloor)
       const dir = floor > this._currentFloor ? "UP" : "DOWN"
       this._queueManager.add(floor, dir)
+      console.log(`Elevator.selectFloor(${floor}): Selected floor ${floor}, direction ${dir}`);
       this.startIfIdle()
     } catch (error) {
       console.error(error)
@@ -106,25 +108,30 @@ export default class Elevator {
   }
 
   private startIfIdle(): void {
+    console.log(`Elevator.startIfIdle(): Engine running: ${this.engine.isRunning}, State: ${this._state}`);
     if (!this.engine.isRunning) this.engine.start()
   }
 
   private _move(): void {
     if (this._queueManager.isEmpty) return
 
+    console.log(`Elevator._move(): Current floor: ${this._currentFloor}, State: ${this._state}, Direction: ${this._direction}`);
     if (this._state === Elevator.IDLE) {
       this._direction = this._queueManager.direction
       this._sweepComplete = false
     }
 
     const nextFloor = this._queueManager.findNextFloor(this._currentFloor, this._direction, this._sweepComplete)
+    console.log(`Elevator._move(): Next floor: ${nextFloor}, Queue: ${JSON.stringify(this._queueManager.floors)}`);
 
     if (nextFloor !== null) {
       if (nextFloor !== this._currentFloor) {
         if (nextFloor > this._currentFloor) {
           this._state = Elevator.MOVING_UP
+          console.log(`Elevator._move(): Moving UP to floor ${nextFloor}`);
         } else if (nextFloor < this._currentFloor) {
           this._state = Elevator.MOVING_DOWN
+          console.log(`Elevator._move(): Moving DOWN to floor ${nextFloor}`);
         }
 
         if (this._direction === "UP" && this._state === Elevator.MOVING_DOWN) {
@@ -135,11 +142,13 @@ export default class Elevator {
 
         this._queueManager.remove(nextFloor)
         this._currentFloor = nextFloor
+        console.log(`Elevator._move(): Arrived at floor ${this._currentFloor}`);
       }
 
       if (this._sweepComplete) {
         this._direction = this._direction === "UP" ? "DOWN" : "UP"
         this._sweepComplete = false
+        console.log(`Elevator._move(): Sweep complete, changing direction to ${this._direction}`);
       }
     }
   }

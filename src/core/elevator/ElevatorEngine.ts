@@ -9,6 +9,7 @@ export default class ElevatorEngine {
       this._speed = options.speed ?? 1000
       this._onTick = options.onTick ?? null
     }
+    console.log('ElevatorEngine created with speed:', this._speed);
   }
 
   get isRunning(): boolean {
@@ -18,11 +19,16 @@ export default class ElevatorEngine {
   start() {
     if (this._isRunning) return
 
+    console.log('ElevatorEngine starting with interval:', this._speed);
     this._isRunning = true
-    this.intervalId = setInterval(() => this._onTick?.(), this._speed)
+    this.intervalId = setInterval(() => {
+      console.log('ElevatorEngine tick');
+      this._onTick?.();
+    }, this._speed)
   }
 
   stop() {
+    console.log('ElevatorEngine stopping');
     if (this.intervalId) {
       clearInterval(this.intervalId)
       this.intervalId = null
@@ -31,6 +37,7 @@ export default class ElevatorEngine {
   }
 
   destroy() {
+    console.log('ElevatorEngine destroyed');
     this.stop()
   }
 }

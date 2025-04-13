@@ -1,25 +1,27 @@
 <script setup lang="ts">
-import {ref} from "vue"
-import {Button, Select} from "primevue"
+import { onMounted } from 'vue';
+import ElevatorSimulator from '@/components/ElevatorSimulator.vue';
 
-const selectedCity = ref()
-const cities = ref([
-  {name: "New York", code: "NY"},
-  {name: "Rome", code: "RM"},
-  {name: "London", code: "LDN"},
-  {name: "Istanbul", code: "IST"},
-  {name: "Paris", code: "PRS"},
-])
-function toggleTheme() {
-  document.documentElement.classList.toggle("dark")
-}
+onMounted(() => {
+  console.log('App mounted, initializing elevator simulator...');
+});
 </script>
 
 <template>
-  <div class="w-svw h-svh flex items-center justify-center">
-    <Button label="Toggle Theme" @click="toggleTheme" />
-    <div class="card flex justify-center">
-      <Select v-model="selectedCity" :options="cities" optionLabel="name" placeholder="Select a City" class="w-full md:w-56" />
-    </div>
+  <div class="app-container min-h-screen bg-surface-50 dark:bg-surface-950 text-surface-900 dark:text-surface-50 p-4">
+    <ElevatorSimulator />
   </div>
 </template>
+
+<style>
+body {
+  font-family: var(--default-font-family);
+  margin: 0;
+  padding: 0;
+}
+
+.app-container {
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+</style>
