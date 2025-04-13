@@ -8,10 +8,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 export default defineConfig({
   plugins: [vue()],
   test: {
-    globals: true,
     environment: "jsdom",
-    include: ["src/**/*.{test,spec}.{js,ts,jsx,tsx}"],
-    exclude: ["e2e/*", "node_modules/**"],
+    globals: true,
+    include: ["**/*.spec.{js,ts}"],
+    exclude: ["node_modules/**"],
     root: __dirname,
     environmentOptions: {
       jsdom: {
